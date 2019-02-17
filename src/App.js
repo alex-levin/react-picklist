@@ -21,20 +21,43 @@ const styles = theme => ({
 class App extends Component {
   state = {
     leftList: ["Honda", "Toyota", "Mazda"],
-    rightList: ["Subaru"]
+    rightList: ["Subaru"],
+    leftSelectedIndex: -1,
+    rightSelectedIndex: -1
   };
 
   handleLeftListItemClick = (event, index) => {
-    const items = this.state.leftList;
-    // remove selected items
-    this.setState({ leftList: [...items.slice(0, index), ...items.slice(index + 1)] });
+    this.setState({ leftSelectedIndex: index });
   };
 
   handleRightListItemClick = (event, index) => {
-    console.log("index:" + index);
-    this.setState({ selectedIndex: index });
+    this.setState({ rightSelectedIndex: index });
+  };
 
-    console.log(this.state);
+  handleArrowRightClick = event => {
+    const { leftList } = this.state;
+    const { rightList } = this.state;
+    const { leftSelectedIndex } = this.state;
+    if (leftSelectedIndex !== -1 && leftList.length > 0) {
+      const leftSelectedItem = leftList[leftSelectedIndex];
+      // append selected item to the right list
+      this.setState({ rightList: [...rightList, leftSelectedItem] });
+      // remove selected items from the left list
+      this.setState({ leftList: [...leftList.slice(0, leftSelectedIndex), ...leftList.slice(leftSelectedIndex + 1)] });
+    }
+  };
+
+  handleArrowLeftClick = event => {
+    const { leftList } = this.state;
+    const { rightList } = this.state;
+    const { rightSelectedIndex } = this.state;
+    if (rightSelectedIndex !== -1 && rightList.length > 0) {
+      const rightSelectedItem = rightList[rightSelectedIndex];
+      // append selected item to the left list
+      this.setState({ leftList: [...leftList, rightSelectedItem] });
+      // remove selected items from the right list
+      this.setState({ rightList: [...rightList.slice(0, rightSelectedIndex), ...rightList.slice(rightSelectedIndex + 1)] });
+    }
   };
 
   render() {
@@ -44,7 +67,7 @@ class App extends Component {
 
     const leftListItems = leftList.map((item, index) => <ListItem key={item}
       button
-      selected={this.state.selectedIndex === 0}
+      //selected={index === 0}
       onClick={event =>
         this.handleLeftListItemClick(event, index)
       }
@@ -52,7 +75,15 @@ class App extends Component {
       <ListItemText primary={item} />
     </ListItem>);
 
-    leftList.forEach((item, index) => console.log(item, index));
+    const rightListItems = rightList.map((item, index) => <ListItem key={item}
+      button
+      //selected={index === 0}
+      onClick={event =>
+        this.handleRightListItemClick(event, index)
+      }
+    >
+      <ListItemText primary={item} />
+    </ListItem>);
 
     return (
       <div className={classes.root}>
@@ -60,16 +91,20 @@ class App extends Component {
           <Grid item xs>
             <Paper className={classes.paper}>
               <List component="nav" dense={true}>
-                  {leftListItems}
+                {leftListItems}
               </List>
             </Paper>
           </Grid>
           <Grid item xs>
             <List component="nav" dense={true}>
-              <ListItem button>
+              <ListItem button onClick={event =>
+                this.handleArrowRightClick(event)
+              }>
                 <Icon>keyboard_arrow_right</Icon>
               </ListItem>
-              <ListItem button>
+              <ListItem button onClick={event =>
+                this.handleArrowLeftClick(event)
+              }>
                 <Icon>keyboard_arrow_left</Icon>
               </ListItem>
             </List>
@@ -77,14 +112,11 @@ class App extends Component {
           <Grid item xs>
             <Paper className={classes.paper}>
               <List component="nav" dense={true}>
-                <ListItem button>
-                  <ListItemText primary="Subaru" />
-                </ListItem>
+                {rightListItems}
               </List>
             </Paper>
           </Grid>
         </Grid>
-        Selected {this.state.selectedIndex}
       </div>
     );
   }
